@@ -15,6 +15,13 @@ public class HolidayData {
         holidays.add(holiday);
 
     }
+
+    public static  void removeHoliday(Holiday holiday){
+        holidays.remove(holiday);
+
+    }
+
+
     public static List<Holiday> getHolidays(){
         return holidays;
     }

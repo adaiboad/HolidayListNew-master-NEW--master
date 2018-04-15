@@ -100,11 +100,14 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String HOLIDAY = "Holiday";
     public static final String ADDNEW = "AddNew";
+    public static final String REMOVEHOLIDAY = "Remove holiday";
     private static final String TAG = "HolidayDetailsFragment" ;
 
     // TODO: Rename and change types of parameters
     private Holiday holiday;
     private boolean addNew;
+    private boolean removeHoliday;
+
 
 
     //****** Add capture picture or select photo function ******//
@@ -115,7 +118,7 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
     private ImageAdapter imageAdapter;
     private String mCurrentPhotoPath;
     Integer REQUEST_CAMERA=1, SELECT_FILE=0;
-    Integer DELETE_FILE=2, SHARE_FILE=3;
+
 
 
 
@@ -184,6 +187,8 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
             Log.i("INFO", "We have a holiday passed to us");
             holiday = (Holiday) getArguments().getSerializable(HOLIDAY);
             addNew = getArguments().getBoolean(ADDNEW);
+            removeHoliday = getArguments().getBoolean(REMOVEHOLIDAY);
+
             Log.i("INFO", "The holoday's title is" + holiday.getTitle());
         }
 
@@ -215,6 +220,14 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
             });
 
 
+        Button optionButton = (Button)view.findViewById(R.id.optionButton);
+        optionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                SelectOption();
+            }
+        });
 
 
         Button dateButton = (Button)view.findViewById(R.id.dateButton);
@@ -707,7 +720,6 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
 
         if(resultCode== Activity.RESULT_OK){
 
-            handlePhoto();
 
             if(requestCode==REQUEST_CAMERA){
 
@@ -725,20 +737,6 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
         }
     }
 
-    private void handlePhoto() {
-        Log.i("AJB", "Handle BIG photo");
-        if (mCurrentPhotoPath != null) {
-            Log.i("AJB", "BIG photo located at " + mCurrentPhotoPath);
-            imageAdapter.addImage(mCurrentPhotoPath);
-            imageAdapter.notifyDataSetChanged();
-
-            mCurrentPhotoPath = null;
-        } else {
-            Log.i("AJB", "BIG photo but no path");
-        }
-
-
-    }
 
 
 
@@ -752,6 +750,48 @@ public class HolidayDetailsFragment extends Fragment implements GoogleApiClient.
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+     /*
+        --------------------------- Share image or delete image-----------------
+ */
+
+
+
+    private void SelectOption(){
+
+        final CharSequence[] items={"Share holiday","Delete holiday", "Cancel"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (items[i].equals("Share holiday")) {
+
+                    Intent myIntent = new Intent(Intent.ACTION_SEND);
+                    myIntent.setType("text/plain");
+                    String shareBody = holiday.getNotes();
+                    String shareSub = holiday.getTitle();
+                    myIntent.putExtra(Intent.EXTRA_SUBJECT, shareBody);
+                    myIntent.putExtra(Intent.EXTRA_TEXT, shareSub);
+                    startActivity(Intent.createChooser(myIntent, "Share via"));
+
+                } else if (items[i].equals("Delete holiday")) {
+
+                    if(removeHoliday)
+                        HolidayData.removeHoliday(holiday);
+
+                } else if (items[i].equals("Cancel")) {
+                    dialogInterface.dismiss();
+                }
+            }
+        });
+        builder.show();
+
     }
 
 
